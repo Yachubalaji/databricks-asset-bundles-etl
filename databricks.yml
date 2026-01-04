@@ -1,0 +1,36 @@
+bundle:
+  name: asset-bundle-terraform-demo
+
+# Use auth from env vars / profile (recommended). Keep host here as a placeholder if you prefer.
+# workspace:
+#   host: https://adb-<workspace-id>.azuredatabricks.net
+
+targets:
+  dev:
+    default: true
+    workspace:
+      root_path: /Shared/bundles/dev/asset-bundle-terraform-demo
+
+  prod:
+    workspace:
+      root_path: /Shared/bundles/prod/asset-bundle-terraform-demo
+
+resources:
+  jobs:
+    simple_iris_etl:
+      name: simple-iris-etl-${bundle.target}
+      max_concurrent_runs: 1
+
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "1"
+
+      tasks:
+        - task_key: iris_etl_task
+          spark_python_task:
+            python_file: src/iris_etl.py
+            parameters:
+              - --target
+              - ${bundle.target}
+          environment_key: serverless
